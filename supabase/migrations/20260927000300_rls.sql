@@ -12,12 +12,16 @@
 -- Service role (Edge Functions, n8n webhook) bypasses RLS by design.
 -- =============================================================================
 
--- Enable RLS on every table in public + reference.
+-- Enable RLS on every land table + reference layers; anon gets nothing on them.
 do $$
-declare t record;
+declare t text;
 begin
-  for t in select schemaname, tablename from pg_tables where schemaname in ('public', 'reference') loop
-    execute format('alter table %I.%I enable row level security', t.schemaname, t.tablename);
+  foreach t in array private.land_tables() loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('revoke all on public.%I from anon', t);
+  end loop;
+  foreach t in array array['i10_centerline', 'interchanges', 'truck_aadt_points'] loop
+    execute format('alter table reference.%I enable row level security', t);
   end loop;
 end $$;
 
@@ -129,7 +133,7 @@ grant usage on schema reference to authenticated, service_role;
 grant select on all tables in schema reference to authenticated;
 grant insert, update, delete on all tables in schema reference to authenticated;
 grant all on all tables in schema reference to service_role;
-revoke all on all tables in schema public from anon;
+revoke all on public.property_grid from anon;
 revoke execute on all functions in schema public from anon, public;
 grant execute on all functions in schema public to authenticated, service_role;
 

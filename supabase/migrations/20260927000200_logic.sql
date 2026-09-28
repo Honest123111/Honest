@@ -39,13 +39,25 @@ create or replace function private.change_source() returns text
 language sql stable set search_path = ''
 as $$ select coalesce(nullif(current_setting('app.change_source', true), ''), 'user') $$;
 
+-- The land-acquisitions tables. Listed explicitly because this project also
+-- holds unrelated tables (trucking) that these statements must not touch.
+create or replace function private.land_tables() returns text[]
+language sql immutable set search_path = ''
+as $$ select array[
+  'profiles', 'app_settings', 'lead_statuses', 'strategies', 'strategy_rules', 'tags', 'dd_templates',
+  'dd_template_items', 'mail_templates', 'provider_settings', 'properties', 'tax_status', 'owners',
+  'property_owners', 'contacts', 'do_not_contact', 'notes', 'documents', 'tasks', 'offers',
+  'due_diligence_items', 'site_metrics', 'mail_campaigns', 'mail_pieces', 'tracking_numbers',
+  'enrichment_requests', 'api_cost_ledger', 'imports', 'import_rows', 'sales_comps', 'saved_views',
+  'activities', 'notifications', 'audit_log']::text[] $$;
+
 grant usage on schema private to authenticated, service_role;
 grant execute on all functions in schema private to authenticated, service_role;
 
 -- -----------------------------------------------------------------------------
 -- New users: create a profile. Company-domain users start active as viewers;
 -- anyone else is created inactive until an admin turns them on.
--- The first admin is promoted by the seed script (ADMIN_EMAIL env var).
+-- Emails in app_settings.bootstrap_admin_emails become active admins on first sign-in.
 -- -----------------------------------------------------------------------------
 create or replace function private.handle_new_user()
 returns trigger
@@ -53,15 +65,19 @@ language plpgsql security definer set search_path = ''
 as $$
 declare
   v_domain text;
+  v_admins text[];
+  v_admin  boolean;
 begin
-  select allowed_email_domain into v_domain from public.app_settings where id;
-  insert into public.profiles (id, email, full_name, avatar_url, is_active)
+  select allowed_email_domain, bootstrap_admin_emails into v_domain, v_admins from public.app_settings where id;
+  v_admin := lower(new.email) = any (select lower(unnest(coalesce(v_admins, '{}'))));
+  insert into public.profiles (id, email, full_name, avatar_url, role, is_active)
   values (
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data ->> 'full_name', new.raw_user_meta_data ->> 'name'),
     new.raw_user_meta_data ->> 'avatar_url',
-    lower(split_part(new.email, '@', 2)) = lower(coalesce(v_domain, ''))
+    case when v_admin then 'admin' else 'viewer' end::public.app_role,
+    v_admin or lower(split_part(new.email, '@', 2)) = lower(coalesce(v_domain, ''))
   )
   on conflict (id) do nothing;
   return new;
@@ -655,7 +671,8 @@ begin
       from information_schema.columns c
       join information_schema.tables tb on tb.table_schema = c.table_schema and tb.table_name = c.table_name
      where c.column_name = 'updated_at' and tb.table_type = 'BASE TABLE'
-       and c.table_schema in ('public', 'reference')
+       and ((c.table_schema = 'public' and c.table_name = any (private.land_tables()))
+            or c.table_schema = 'reference')
   loop
     execute format('create trigger b00_set_updated_at before update on %I.%I
                     for each row execute function private.set_updated_at()', t.table_schema, t.table_name);
@@ -666,12 +683,8 @@ end $$;
 do $$
 declare t text;
 begin
-  foreach t in array array[
-    'profiles', 'app_settings', 'lead_statuses', 'strategies', 'strategy_rules', 'tags', 'dd_templates',
-    'dd_template_items', 'mail_templates', 'provider_settings', 'properties', 'tax_status', 'owners',
-    'property_owners', 'contacts', 'do_not_contact', 'notes', 'documents', 'tasks', 'offers',
-    'due_diligence_items', 'site_metrics', 'mail_campaigns', 'mail_pieces', 'tracking_numbers',
-    'enrichment_requests', 'api_cost_ledger', 'imports', 'sales_comps', 'saved_views', 'activities']
+  foreach t in array array(select unnest(private.land_tables())
+                           except select unnest(array['audit_log', 'notifications', 'import_rows']))
   loop
     execute format('create trigger z_audit after insert or update or delete on public.%I
                     for each row execute function private.audit_trigger()', t);

@@ -79,6 +79,7 @@ create table public.app_settings (
   stale_lead_days            integer       not null default 14,
   auction_alert_days         integer       not null default 60,
   allowed_email_domain       text          not null default 'honesttransportation.com',
+  bootstrap_admin_emails     text[]        not null default '{}',   -- promoted to admin on first sign-in
   scoring_weights            jsonb         not null default '{}'::jsonb,   -- EV score weights (§7)
   created_at                 timestamptz not null default now(),
   updated_at                 timestamptz not null default now(),

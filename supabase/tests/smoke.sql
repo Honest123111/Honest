@@ -4,12 +4,14 @@
 begin;
 
 -- users ----------------------------------------------------------------------
+update public.app_settings set bootstrap_admin_emails = array['Boss@HonestTransportation.com'];
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-00000000000a', 'admin@honesttransportation.com'),
   ('00000000-0000-0000-0000-00000000000b', 'acq@honesttransportation.com'),
   ('00000000-0000-0000-0000-00000000000c', 'analyst@honesttransportation.com'),
   ('00000000-0000-0000-0000-00000000000d', 'viewer@honesttransportation.com'),
-  ('00000000-0000-0000-0000-00000000000e', 'stranger@gmail.com');
+  ('00000000-0000-0000-0000-00000000000e', 'stranger@gmail.com'),
+  ('00000000-0000-0000-0000-00000000000f', 'boss@honesttransportation.com');
 update public.profiles set role = 'admin'        where email like 'admin@%';
 update public.profiles set role = 'acquisitions' where email like 'acq@%';
 update public.profiles set role = 'analyst'      where email like 'analyst@%';
@@ -17,6 +19,7 @@ update public.profiles set role = 'analyst'      where email like 'analyst@%';
 do $$ begin
   assert (select is_active from public.profiles where email = 'stranger@gmail.com') = false, 'off-domain user must start inactive';
   assert (select is_active from public.profiles where email = 'viewer@honesttransportation.com'), 'company user must start active';
+  assert (select role from public.profiles where email = 'boss@honesttransportation.com') = 'admin', 'bootstrap admin promoted';
 end $$;
 
 -- reference: a straight "I-10" along lat 33.6 and one interchange
@@ -178,6 +181,13 @@ do $$ begin
     if sqlerrm not like 'Budget stop%' then raise; end if;
   end;
 end $$;
+
+-- inactive users can't read spend
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000e');
+do $$ begin
+  assert public.month_spend() is null, 'inactive user must not see spend';
+end $$;
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000a');
 
 -- 8. audit + history --------------------------------------------------------
 do $$ begin
