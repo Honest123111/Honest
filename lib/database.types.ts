@@ -998,6 +998,7 @@ export type Database = {
         Row: {
           action: Database["public"]["Enums"]["import_row_action"] | null
           apn: string | null
+          committed_at: string | null
           conflict_resolution: Json | null
           conflicts: Json | null
           created_at: string
@@ -1014,6 +1015,7 @@ export type Database = {
         Insert: {
           action?: Database["public"]["Enums"]["import_row_action"] | null
           apn?: string | null
+          committed_at?: string | null
           conflict_resolution?: Json | null
           conflicts?: Json | null
           created_at?: string
@@ -1030,6 +1032,7 @@ export type Database = {
         Update: {
           action?: Database["public"]["Enums"]["import_row_action"] | null
           apn?: string | null
+          committed_at?: string | null
           conflict_resolution?: Json | null
           conflicts?: Json | null
           created_at?: string
@@ -2861,10 +2864,15 @@ export type Database = {
       }
     }
     Functions: {
+      commit_import: {
+        Args: { p_import_id: string; p_limit?: number }
+        Returns: Json
+      }
       corridor_zone_for: {
         Args: { p_miles: number }
         Returns: Database["public"]["Enums"]["corridor_zone"]
       }
+      dashboard_stats: { Args: never; Returns: Json }
       decide_enrichment: {
         Args: { p_approve: boolean; p_ids: string[]; p_reason?: string }
         Returns: {
