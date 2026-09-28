@@ -214,5 +214,85 @@ do $$ begin
   end;
 end $$;
 
+
+-- 11. import commit: create, dedupe on re-import, conflicts keep user edits unless overwritten
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000b');
+insert into public.imports (id, file_name, source_type, status)
+values ('33333333-3333-3333-3333-333333333333', 'leads.xlsx', 'i10_leads_workbook', 'previewed');
+insert into public.import_rows (import_id, row_number, apn, action, raw, mapped) values
+  ('33333333-3333-3333-3333-333333333333', 2, '821210008', 'create', '{}', '{
+     "county":"riverside","apn":"821210008","source_list":"tax_default","source_year":2025,
+     "changes":{"situs_city":"Blythe","acres":75.74,"strategy":"large_vacant","lead_status":"offer_made","id":"x"},
+     "conflicts":{},
+     "tax":{"snapshot_date":"2025-10-01","source":"leads","years_in_default":3.5,"redemption_amount":1200},
+     "owners":[{"name":"Wells Road LLC","owner_type":"entity","mailing_address":"1 Main St","ownership_pct":60},
+               {"name":"Ann Lee","owner_type":"individual","mailing_address":"1 Main St","ownership_pct":40}],
+     "contacts":[{"owner_index":1,"phone":"760-555-0199","email":null}],
+     "note":"Gas, electric and water on site"}'),
+  ('33333333-3333-3333-3333-333333333333', 3, '836121003', 'conflict', '{}', '{
+     "county":"riverside","apn":"836121003","changes":{"situs_city":"Blythe"},
+     "conflicts":{"zoning":{"current":"M1","incoming":"C-1"}},"owners":[],"contacts":[],"tax":null,"note":null}');
+update public.import_rows set property_id = '11111111-1111-1111-1111-111111111111' where row_number = 3;
+do $$
+declare res jsonb; p public.properties;
+begin
+  res := public.commit_import('33333333-3333-3333-3333-333333333333');
+  assert (res ->> 'created')::int = 1 and (res ->> 'updated')::int = 1 and (res ->> 'remaining')::int = 0, res::text;
+  select * into p from public.properties where apn = '821210008';
+  assert p.acres = 75.74 and p.strategy = 'large_vacant', 'created with planned fields';
+  assert p.lead_status = 'new', 'late-stage status from a file is ignored';
+  assert p.field_sources -> 'acres' ->> 'src' = 'import', 'provenance = import';
+  assert (select count(*) from public.property_owners where property_id = p.id) = 2, 'co-owners linked';
+  assert (select ownership_pct from public.property_owners po join public.owners o on o.id = po.owner_id
+           where po.property_id = p.id and o.name = 'Ann Lee') = 40, 'ownership pct';
+  assert (select count(*) from public.contacts where phone_e164 = '+17605550199') = 1, 'contact';
+  assert (select count(*) from public.tax_status where property_id = p.id) = 1, 'tax snapshot';
+  assert exists (select 1 from public.notes where property_id = p.id and body like 'Gas%'), 'note';
+  assert exists (select 1 from public.activities where property_id = p.id and type = 'import'), 'import activity';
+  assert exists (select 1 from public.audit_log where property_id = p.id and change_source = 'import'), 'audited as import';
+  -- conflict defaulted to keep: zoning unchanged, non-conflicting change applied
+  select * into p from public.properties where id = '11111111-1111-1111-1111-111111111111';
+  assert p.zoning = 'M1' and p.situs_city = 'Blythe', 'conflict kept, change applied';
+  assert (select status from public.imports where id = '33333333-3333-3333-3333-333333333333') = 'committed', 'status';
+end $$;
+
+-- re-import the same parcels: no duplicates; overwrite resolution applies; owners/contacts not duplicated
+insert into public.imports (id, file_name, source_type, status)
+values ('44444444-4444-4444-4444-444444444444', 'leads2.xlsx', 'i10_leads_workbook', 'previewed');
+insert into public.import_rows (import_id, row_number, apn, action, raw, mapped, conflict_resolution) values
+  ('44444444-4444-4444-4444-444444444444', 2, '821210008', 'create', '{}', '{
+     "county":"riverside","apn":"821210008","changes":{"acres":80},"conflicts":{},
+     "owners":[{"name":"WELLS ROAD, LLC","owner_type":"entity","mailing_address":"1 Main St.","ownership_pct":null}],
+     "contacts":[],"tax":null,"note":"Gas, electric and water on site"}', null),
+  ('44444444-4444-4444-4444-444444444444', 3, '836121003', 'conflict', '{}', '{
+     "county":"riverside","apn":"836121003","changes":{},
+     "conflicts":{"zoning":{"current":"M1","incoming":"C-1"}},"owners":[],"contacts":[],"tax":null,"note":null}',
+     '{"zoning":"overwrite"}');
+update public.import_rows set property_id = '11111111-1111-1111-1111-111111111111'
+ where import_id = '44444444-4444-4444-4444-444444444444' and row_number = 3;
+do $$
+declare res jsonb;
+begin
+  res := public.commit_import('44444444-4444-4444-4444-444444444444');
+  assert (res ->> 'created')::int = 0 and (res ->> 'updated')::int = 2, 'stale "create" resolves to the existing parcel: ' || res::text;
+  assert (select count(*) from public.properties where apn = '821210008') = 1, 'no duplicate APN';
+  assert (select acres from public.properties where apn = '821210008') = 80, 'import value refreshed';
+  assert (select zoning from public.properties where id = '11111111-1111-1111-1111-111111111111') = 'C-1', 'overwrite applied';
+  assert (select count(*) from public.owners where name_normalized = 'wells road llc') = 1, 'owner matched, not duplicated';
+  assert (select ownership_pct from public.property_owners po join public.owners o on o.id = po.owner_id
+           where o.name_normalized = 'wells road llc') = 60, 'null pct keeps existing';
+  assert (select count(*) from public.notes where body like 'Gas%') = 1, 'note not duplicated';
+end $$;
+
+-- viewers and analysts cannot commit imports
+select pg_temp.as_user('00000000-0000-0000-0000-00000000000c');
+do $$ begin
+  begin
+    perform public.commit_import('44444444-4444-4444-4444-444444444444');
+    raise exception 'analyst committed an import';
+  exception when insufficient_privilege then null;
+  end;
+end $$;
+
 select 'ALL SMOKE TESTS PASSED' as result;
 rollback;
