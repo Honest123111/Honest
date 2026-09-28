@@ -1,6 +1,14 @@
 # HT Land Acquisitions Dashboard — Architecture & Phase 1 Plan
 
-Status: **proposal, awaiting approval.** Nothing has been scaffolded or deployed. No Supabase project, Vercel project, or paid service has been touched.
+Status: **Phase 1 built** (2026-09-28). Decisions from review:
+- Supabase: use the existing *Honest123111's Project*.
+- Hosting: Firebase Studio + App Hosting instead of Vercel.
+- kevin@ is Admin, and company-domain users auto-join as Viewers.
+- Acquisitions may approve teammates' email reveals; phone reveals and skip trace stay Admin-only.
+- EV Candidate is both a tag and a locked strategy.
+- Viewers can see contacts.
+
+The original proposal follows.
 
 What's in the repo for review:
 

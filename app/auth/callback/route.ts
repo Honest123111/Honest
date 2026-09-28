@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { safePath } from "@/lib/utils";
 
 /** PKCE redirect target for magic links and Google sign-in. */
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
-  const next = url.searchParams.get("next") ?? "/";
-  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const safeNext = safePath(url.searchParams.get("next"));
   const origin = process.env.NEXT_PUBLIC_SITE_URL || url.origin;
 
   if (code) {

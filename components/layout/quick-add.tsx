@@ -22,7 +22,7 @@ export function QuickAdd() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" className="gap-1"><Plus /> <span className="hidden sm:inline">Quick add</span></Button>
+          <Button size="sm" className="gap-1" aria-label="Quick add"><Plus /> <span className="hidden sm:inline">Quick add</span></Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {canWrite && <DropdownMenuItem onSelect={() => setWhich("property")}><Building2 /> Property</DropdownMenuItem>}
@@ -35,7 +35,7 @@ export function QuickAdd() {
       <TaskDialog open={which === "task"} onOpenChange={(o) => setWhich(o ? "task" : null)} />
       <Dialog open={which === "note"} onOpenChange={(o) => { setWhich(o ? "note" : null); setPicked(null); }}>
         <DialogContent title="Add a note" description="Pick the property; the note editor opens on its Activity tab.">
-          <Field label="Property"><PropertyPicker value={picked} onChange={setPicked} /></Field>
+          <Field group label="Property"><PropertyPicker value={picked} onChange={setPicked} /></Field>
           <DialogFooter>
             <Button
               disabled={!picked}

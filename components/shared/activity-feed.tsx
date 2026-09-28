@@ -23,7 +23,7 @@ export function ActivityFeed({ items, showProperty }: { items: Activity[]; showP
       {items.map((a) => {
         const Icon = ICONS[a.type] ?? Building2;
         return (
-          <li key={a.id} className="flex gap-2 text-sm">
+          <li key={a.id} className="flex min-w-0 gap-2 text-sm">
             <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
             <div className="min-w-0 flex-1">
               <div className="truncate">

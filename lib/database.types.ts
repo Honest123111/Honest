@@ -1435,7 +1435,7 @@ export type Database = {
         Row: {
           body: string
           created_at: string
-          created_by: string
+          created_by: string | null
           id: string
           mentions: string[]
           parent_id: string | null
@@ -1447,7 +1447,7 @@ export type Database = {
         Insert: {
           body: string
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           id?: string
           mentions?: string[]
           parent_id?: string | null
@@ -1459,7 +1459,7 @@ export type Database = {
         Update: {
           body?: string
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           id?: string
           mentions?: string[]
           parent_id?: string | null

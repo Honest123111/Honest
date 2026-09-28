@@ -33,3 +33,14 @@ describe("APN", () => {
     expect(parseCounty("")).toBeNull();
   });
 });
+
+import { safePath } from "@/lib/utils";
+describe("safePath", () => {
+  it("keeps same-site paths and rejects external ones", () => {
+    expect(safePath("/properties?x=1")).toBe("/properties?x=1");
+    expect(safePath("//evil.com")).toBe("/");
+    expect(safePath("/\\evil.com")).toBe("/");
+    expect(safePath("https://evil.com")).toBe("/");
+    expect(safePath(null)).toBe("/");
+  });
+});

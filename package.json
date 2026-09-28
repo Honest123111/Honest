@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:db": "supabase/tests/run_local.sh",
+    "test:e2e": "playwright test",
+    "stack:local": "scripts/local-stack/up.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -51,9 +56,13 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.26",
+    "pg": "^8.23.0",
     "prettier": "^3.9.9",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.0.2"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

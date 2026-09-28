@@ -66,7 +66,7 @@ export function TaskDialog({
             <Input name="title" required defaultValue={task?.title} autoFocus placeholder="e.g. Call SCE planner about Blythe site" />
           </Field>
           {!task && !propertyId && (
-            <Field label="Property (optional)">
+            <Field group label="Property (optional)">
               <PropertyPicker value={property} onChange={setProperty} />
             </Field>
           )}

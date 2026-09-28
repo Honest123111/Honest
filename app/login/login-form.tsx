@@ -16,7 +16,7 @@ export function LoginForm({ next, error }: { next?: string; error?: string }) {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const supabase = createClient();
-  const redirectTo = `${siteUrl()}/auth/callback?next=${encodeURIComponent(next?.startsWith("/") ? next : "/")}`;
+  const redirectTo = `${siteUrl()}/auth/callback?next=${encodeURIComponent(next ?? "/")}`;
 
   async function sendLink(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +33,7 @@ export function LoginForm({ next, error }: { next?: string; error?: string }) {
     const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
     setBusy(false);
     if (error) return toast.error(error.message);
-    window.location.href = next?.startsWith("/") ? next : "/";
+    window.location.href = next ?? "/";
   }
 
   async function google() {

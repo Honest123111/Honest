@@ -58,3 +58,8 @@ export function errorMessage(e: unknown): string {
   if (err.code === "23505") return "That already exists (duplicate).";
   return err.message ?? "Something went wrong";
 }
+
+/** Same-site path for post-login redirects; anything else becomes "/". */
+export function safePath(p: string | null | undefined): string {
+  return p && p.startsWith("/") && !p.startsWith("//") && !p.includes("\\") ? p : "/";
+}

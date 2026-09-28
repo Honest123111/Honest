@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
+import { safePath } from "@/lib/utils";
 import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Sign in" };
@@ -7,7 +8,7 @@ export const metadata = { title: "Sign in" };
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const { user } = await getSession();
   const { next, error } = await searchParams;
-  if (user) redirect(next?.startsWith("/") ? next : "/");
+  if (user) redirect(safePath(next));
   return (
     <main className="flex min-h-dvh items-center justify-center p-4">
       <div className="w-full max-w-sm">
@@ -16,7 +17,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <h1 className="text-xl font-semibold">Land Acquisitions</h1>
           <p className="text-sm text-muted-foreground">Honest Transportation</p>
         </div>
-        <LoginForm next={next} error={error} />
+        <LoginForm next={safePath(next)} error={error} />
       </div>
     </main>
   );

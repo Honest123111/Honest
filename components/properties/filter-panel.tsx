@@ -60,20 +60,20 @@ export function FilterPanel({ open, onOpenChange, value, onApply }: {
     <Dialog open={open} onOpenChange={(o) => { if (o) setF(value); onOpenChange(o); }}>
       <DialogContent title="Filters" className="sm:max-w-2xl">
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="County" className="sm:col-span-2">
+          <Field group label="County" className="sm:col-span-2">
             <MultiCheck options={Object.entries(COUNTY_LABELS)} value={f.county} onChange={(county) => up({ county })} />
           </Field>
-          <Field label="Corridor zone" className="sm:col-span-2">
+          <Field group label="Corridor zone" className="sm:col-span-2">
             <MultiCheck options={Object.entries(ZONE_LABELS)} value={f.zone} onChange={(zone) => up({ zone })} />
           </Field>
-          <Field label="Status" className="sm:col-span-2">
+          <Field group label="Status" className="sm:col-span-2">
             <MultiCheck options={statuses.map((s) => [s.key, s.label])} value={f.status} onChange={(status) => up({ status })} />
           </Field>
-          <Field label="Strategy" className="sm:col-span-2">
+          <Field group label="Strategy" className="sm:col-span-2">
             <MultiCheck options={strategies.map((s) => [s.key, s.label])} value={f.strategy} onChange={(strategy) => up({ strategy })} />
           </Field>
           {tags.length > 0 && (
-            <Field label="Tags (any of)" className="sm:col-span-2">
+            <Field group label="Tags (any of)" className="sm:col-span-2">
               <MultiCheck options={tags.map((t) => [t.name, t.name])} value={f.tags} onChange={(tags) => up({ tags })} />
             </Field>
           )}
@@ -86,9 +86,9 @@ export function FilterPanel({ open, onOpenChange, value, onApply }: {
               {team.map((m) => <option key={m.id} value={m.id}>{displayName(m)}</option>)}
             </NativeSelect>
           </Field>
-          <Field label="Miles to I-10"><Range min={f.dmin} max={f.dmax} onChange={(dmin, dmax) => up({ dmin, dmax })} /></Field>
-          <Field label="Acres"><Range min={f.amin} max={f.amax} onChange={(amin, amax) => up({ amin, amax })} /></Field>
-          <Field label="Owed / land ratio" hint="0.5 = taxes owed are half the land value"><Range min={f.olmin} max={f.olmax} onChange={(olmin, olmax) => up({ olmin, olmax })} /></Field>
+          <Field group label="Miles to I-10"><Range min={f.dmin} max={f.dmax} onChange={(dmin, dmax) => up({ dmin, dmax })} /></Field>
+          <Field group label="Acres"><Range min={f.amin} max={f.amax} onChange={(amin, amax) => up({ amin, amax })} /></Field>
+          <Field group label="Owed / land ratio" hint="0.5 = taxes owed are half the land value"><Range min={f.olmin} max={f.olmax} onChange={(olmin, olmax) => up({ olmin, olmax })} /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Yrs in default ≥"><Input type="number" inputMode="decimal" value={f.ydmin ?? ""} onChange={(e) => up({ ydmin: e.target.value === "" ? undefined : Number(e.target.value) })} /></Field>
             <Field label="EV score ≥"><Input type="number" inputMode="decimal" min={0} max={10} value={f.evmin ?? ""} onChange={(e) => up({ evmin: e.target.value === "" ? undefined : Number(e.target.value) })} /></Field>

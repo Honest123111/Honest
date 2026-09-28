@@ -30,12 +30,23 @@ export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLab
   return <label className={cn("text-sm font-medium leading-none", className)} {...props} />;
 }
 
-export function Field({ label, children, hint, className }: { label: string; children: React.ReactNode; hint?: React.ReactNode; className?: string }) {
-  return (
-    <div className={cn("grid gap-1.5", className)}>
-      <Label>{label}</Label>
+/**
+ * Label + control. Wraps the control in a <label> so it is associated for
+ * screen readers; use `group` when the field holds several controls.
+ */
+export function Field({ label, children, hint, className, group }: {
+  label: string; children: React.ReactNode; hint?: React.ReactNode; className?: string; group?: boolean;
+}) {
+  const body = (
+    <>
+      <span className="text-sm font-medium leading-none">{label}</span>
       {children}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
-    </div>
+      {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
+    </>
+  );
+  return group ? (
+    <div role="group" aria-label={label} className={cn("grid gap-1.5", className)}>{body}</div>
+  ) : (
+    <label className={cn("grid gap-1.5", className)}>{body}</label>
   );
 }

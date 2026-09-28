@@ -30,7 +30,7 @@ export const COLUMNS: ColumnDef[] = [
   {
     id: "apn", label: "APN", sort: "apn", defaultVisible: true, width: "9.5rem",
     cell: (r) => (
-      <Link href={`/properties/${r.id}`} className="font-mono text-xs font-medium text-primary hover:underline">
+      <Link href={`/properties/${r.id}`} className="whitespace-nowrap font-mono text-xs font-medium text-primary hover:underline">
         {r.apn_display}
       </Link>
     ),

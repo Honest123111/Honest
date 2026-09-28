@@ -44,3 +44,7 @@ next-env.d.ts
 # seed files contain owner PII — load locally, never commit
 /seed/*
 !/seed/README.md
+
+# test output
+/test-results/
+/playwright-report/
