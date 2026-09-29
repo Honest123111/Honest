@@ -185,7 +185,7 @@ export function splitMailingAddress(s: string | null): {
 }
 
 const STRATEGY_LABELS: [RegExp, string][] = [
-  [/ev/i, "ev_candidate"],
+  [/\bev\b|ev candidate|charging/i, "ev_candidate"],
   [/auction/i, "auction_watch"],
   [/large/i, "large_vacant"],
   [/improved/i, "improved"],

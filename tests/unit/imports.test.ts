@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { detectFormat, detectHeaderRow, suggestMapping } from "@/lib/imports/fields";
-import { normalizeRow, parseMoney, parseOwnershipForm, guessOwnerType, parseDate, type NormalizeOptions } from "@/lib/imports/normalize";
+import { normalizeRow, parseMoney, parseOwnershipForm, guessOwnerType, parseDate, parseStrategy, type NormalizeOptions } from "@/lib/imports/normalize";
 import { planImport, summarize, type ExistingProperty } from "@/lib/imports/plan";
 
 const ttcHeaders = [
@@ -64,6 +64,18 @@ describe("value parsing", () => {
     expect(o[0]).toEqual({ name: "Guy A", pct: 15.36 });
     expect(o.reduce((s, x) => s + (x.pct ?? 0), 0)).toBeCloseTo(96.16, 2);
     expect(parseOwnershipForm("Ann Lee; Bob Lee")).toEqual([{ name: "Ann Lee", pct: null }, { name: "Bob Lee", pct: null }]);
+  });
+});
+
+describe("strategy labels from sheets", () => {
+  it("maps the leads sheet's labels without false EV matches", () => {
+    expect(parseStrategy("Auction watch (5+ yrs default)")).toBe("auction_watch");
+    expect(parseStrategy("Large vacant acreage (5+ ac)")).toBe("large_vacant");
+    expect(parseStrategy("Improved property w/ tax distress")).toBe("improved");
+    expect(parseStrategy("Vacant lot, motivated owner")).toBe("vacant_lot_motivated");
+    expect(parseStrategy("Low-value lot (<$5K)")).toBe("low_value_lot");
+    expect(parseStrategy("EV Candidate")).toBe("ev_candidate");
+    expect(parseStrategy("Development parcel")).toBeNull();
   });
 });
 
