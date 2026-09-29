@@ -14,8 +14,8 @@
 ## Needs you in the Supabase dashboard
 
 1. **Authentication → URL Configuration**
-   - *Site URL:* your App Hosting URL, once the backend exists.
-   - *Redirect URLs:* add `https://<your-app-hosting-domain>/**`, `http://localhost:3000/**`, and `https://*.cloudworkstations.dev/**` (Firebase Studio previews).
+   - *Site URL:* `https://ht-land--proptrack-cb719.us-central1.hosted.app`
+   - *Redirect URLs:* add `https://ht-land--proptrack-cb719.us-central1.hosted.app/**`, `http://localhost:3000/**`, and `https://*.cloudworkstations.dev/**` (Firebase Studio previews).
 2. **Authentication → Emails → Magic Link** template, so links work across devices and the 6-digit code works on phones. Replace the body with:
    ```html
    <h2>Sign in to HT Land</h2>
