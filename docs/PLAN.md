@@ -64,7 +64,7 @@ Key rules the database enforces (so the UI can't bypass them):
   - Phone reveals and skip trace need Admin approval. Other paid calls can be approved by Admin, or by Acquisitions on someone else's request.
   - Approval is a **hard stop** if ledger spend this month plus already-approved estimates would pass the provider cap or the overall cap.
   - Only the service role writes the ledger.
-- **Distance.** When a parcel polygon arrives, the trigger sets the centroid, measures the edge distance to the I-10 line (geography, in miles), finds the nearest interchange and derives `corridor_zone`. PLSS estimates stay until real polygons replace them. `recompute_property_geo()` re-runs everything after the centerline is loaded.
+- **Distance.** When a parcel polygon arrives, the trigger sets the centroid, measures the edge distance to the I-10 line (geography, in miles), finds the nearest interchange and derives `corridor_zone`. PLSS estimates stay until real polygons replace them. The n8n workflow "HT Land – I-10 Centerline & Interchanges" loads the Caltrans I-10 centerline and OSM exits monthly (`gis_load_i10_reference`), then recomputes every property in 10 slices (`gis_recompute_geo_batch`) to stay under PostgREST's 8 s limit.
 - **Strategy and scores.** These are evaluated by one TypeScript module (`lib/rules`), driven by the `strategy_rules` table and `app_settings.scoring_weights`, and unit-tested. Changing a rule in Settings triggers a batch recalculation. `strategy_locked` protects manual overrides.
 
 ### Deviations from the brief (please confirm)
