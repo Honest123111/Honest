@@ -48,7 +48,7 @@ const write = node({
 const summary = node({
   type: 'n8n-nodes-base.code', version: 2,
   config: { name: 'Run Summary', position: [1040, 180],
-    parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: "// Totals across all batches written this run.\nconst t = { batches: 0, updated: 0, no_polygon: 0, unknown_apn: 0 };\nfor (const r of $('Write to Land DB').all()) {\n  t.batches += 1;\n  t.updated += r.json.updated || 0;\n  t.no_polygon += r.json.no_polygon || 0;\n  t.unknown_apn += r.json.unknown_apn || 0;\n}\nreturn [{ json: { ...t, finishedAt: new Date().toISOString() } }];\n" } }
+    parameters: { mode: 'runOnceForAllItems', language: 'javaScript', jsCode: "// Totals across all batches written this run.\nconst t = { batches: 0, updated: 0, no_polygon: 0, unknown_apn: 0 };\nfor (const r of $input.all()) {\n  t.batches += 1;\n  t.updated += r.json.updated || 0;\n  t.no_polygon += r.json.no_polygon || 0;\n  t.unknown_apn += r.json.unknown_apn || 0;\n}\nreturn [{ json: { ...t, finishedAt: new Date().toISOString() } }];\n" } }
 });
 
 const note1 = sticky('## Riverside GIS Parcel Sync\nFree county data, no approval needed.\n1. Finds land-DB properties with no parcel polygon.\n2. Pulls polygon, land-use class, acreage, situs and homeowner exemption from gis.countyofriverside.us (100 APNs per call).\n3. Writes via `gis_apply_parcels`: polygon always; other fields only fill blanks. Distance to I-10 recomputes automatically once the centerline is loaded.\n\n**Setup:** attach the *Supabase – HT Land (service role)* credential to the two Supabase nodes.', [], { position: [0, -120], width: 520, height: 260, color: 4 });
