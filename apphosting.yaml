@@ -17,10 +17,9 @@ env:
   - variable: NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
     value: sb_publishable_wEaDbmii9eNgDxyUsLf-ug_3tIlDbDk
     availability: [BUILD, RUNTIME]
-  # Set once the App Hosting URL (or custom domain) is known; until then the
-  # app uses the browser's origin for sign-in redirects.
-  # - variable: NEXT_PUBLIC_SITE_URL
-  #   value: https://land.honesttransportation.com
-  #   availability: [BUILD, RUNTIME]
+  # Public URL used for sign-in redirects (update if a custom domain is added).
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://ht-land--proptrack-cb719.us-central1.hosted.app
+    availability: [BUILD, RUNTIME]
   # - variable: SUPABASE_SERVICE_ROLE_KEY
   #   secret: SUPABASE_SERVICE_ROLE_KEY
