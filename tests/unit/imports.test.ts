@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { detectFormat, detectHeaderRow, suggestMapping } from "@/lib/imports/fields";
-import { normalizeRow, parseMoney, parseOwnershipForm, guessOwnerType, parseDate, type NormalizeOptions } from "@/lib/imports/normalize";
+import { normalizeRow, parseMoney, parseOwnershipForm, guessOwnerType, parseDate, parseStrategy, type NormalizeOptions } from "@/lib/imports/normalize";
 import { planImport, summarize, type ExistingProperty } from "@/lib/imports/plan";
 
 const ttcHeaders = [
@@ -67,6 +67,18 @@ describe("value parsing", () => {
   });
 });
 
+describe("strategy labels from sheets", () => {
+  it("maps the leads sheet's labels without false EV matches", () => {
+    expect(parseStrategy("Auction watch (5+ yrs default)")).toBe("auction_watch");
+    expect(parseStrategy("Large vacant acreage (5+ ac)")).toBe("large_vacant");
+    expect(parseStrategy("Improved property w/ tax distress")).toBe("improved");
+    expect(parseStrategy("Vacant lot, motivated owner")).toBe("vacant_lot_motivated");
+    expect(parseStrategy("Low-value lot (<$5K)")).toBe("low_value_lot");
+    expect(parseStrategy("EV Candidate")).toBe("ev_candidate");
+    expect(parseStrategy("Development parcel")).toBeNull();
+  });
+});
+
 describe("row normalization", () => {
   it("TTC row: apn, tax snapshot with derived years in default, vacancy", () => {
     const mapping = suggestMapping(ttcHeaders, "tax_default_inventory");
@@ -77,8 +89,23 @@ describe("row normalization", () => {
     expect(row.errors).toEqual([]);
     expect(row.apn).toBe("836121003");
     expect(row.property.is_vacant).toBe(true);
-    expect(row.tax?.years_in_default).toBeCloseTo(10, 1);
+    expect(row.tax?.years_in_default).toBeCloseTo(5, 1); // years since power-to-sell (2020 → 2025)
     expect(row.tax?.owed_to_land_ratio).toBeCloseTo(0.3, 4);
+  });
+  it("TTC row: acres from the description, APN-only 'other description' dropped", () => {
+    const mapping = suggestMapping(ttcHeaders, "tax_default_inventory");
+    const row = normalizeRow(
+      { PIN: "535080011", "Property Description": "4.93 ACRES M/L IN POR NE 1/4 OF SEC 4 T3S R1E", "Other Description": "535080011" },
+      mapping, 5, "Sheet1", ttcOpts,
+    );
+    expect(row.property.acres).toBe(4.93);
+    expect(row.property.property_description).toBe("4.93 ACRES M/L IN POR NE 1/4 OF SEC 4 T3S R1E");
+    const lot = normalizeRow({ PIN: "535213032", "Property Description": "LOT 10 MB 042/075 MONTCLAIR PARK" }, mapping, 6, "Sheet1", ttcOpts);
+    expect(lot.property.acres).toBeNull();
+    const half = normalizeRow({ PIN: "535213033", "Property Description": "N 1/2 ACRE OF LOT 4" }, mapping, 7, "Sheet1", ttcOpts);
+    expect(half.property.acres).toBeNull();
+    const tiny = normalizeRow({ PIN: "540020058", "Property Description": ".01 ACRES M/L IN POR BLK 280" }, mapping, 8, "Sheet1", ttcOpts);
+    expect(tiny.property.acres).toBe(0.01);
   });
   it("off-market row: APN from book/page/parcel, co-owners, SB leading zero", () => {
     const mapping = suggestMapping(offMarketHeaders, "off_market_list");

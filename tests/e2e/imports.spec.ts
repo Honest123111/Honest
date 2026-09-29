@@ -56,7 +56,7 @@ test("TTC inventory import: auto-map, preview, commit, re-import without duplica
   await page.getByRole("tab", { name: "Tax" }).click();
   await expect(page.getByText("$1,451")).toBeVisible();
   await page.getByRole("tab", { name: "Overview" }).click();
-  // power to sell 2019 → ~11 years in default at the 2025 snapshot → rule 1 (auction watch) beats low land value
+  // power to sell 2019 → 6 years at the 2025 snapshot → rule 1 (auction watch) beats low land value
   await expect(page.getByRole("combobox", { name: "Strategy" })).toHaveValue("auction_watch");
 
   // 2. user edits a field, then the same file is imported again
