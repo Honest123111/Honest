@@ -274,7 +274,11 @@ export function normalizeRow(
     acres: parseNumber(get("acres")),
     zoning: text("zoning"),
     land_use: text("land_use"),
-    property_description: [text("property_description"), text("other_description")].filter(Boolean).join(" — ") || null,
+    // "Other Description" in the TTC file is usually just the APN again
+    property_description:
+      [text("property_description"), text("other_description")]
+        .filter((d) => d && normalizeApn(d) !== apn)
+        .join(" — ") || null,
     land_value,
     structure_value,
     asking_price: parseMoney(get("asking_price")),
@@ -284,6 +288,11 @@ export function normalizeRow(
     is_vacant: structure_value === null ? null : structure_value <= 0,
   };
   if (property.distance_to_i10_mi !== null && !property.location_method) property.location_method = "plss_estimate";
+  // No acreage column (TTC inventory)? Descriptions often say "4.93 ACRES M/L …".
+  if (property.acres === null && property.property_description) {
+    const m = property.property_description.match(/(?<![\d/.])(\d*\.?\d+)\s*(?:ACRES?|AC)\b/i);
+    if (m) property.acres = Number(m[1]);
+  }
 
   // owners: explicit ownership form (co-owners + %) or a single owner name
   const mailing = splitMailingAddress(text("mailing_address"));
@@ -321,9 +330,10 @@ export function normalizeRow(
   const redemption = parseMoney(get("redemption_amount"));
   let years = parseNumber(get("years_in_default"));
   if (years === null && opts.deriveYearsInDefault && pts && opts.snapshotDate && pts <= opts.snapshotDate) {
-    // Power to sell arises after 5 years in default (Rev. & Tax. Code §3691).
+    // Same convention as the team's leads workbook: years since the county's
+    // power-to-sell date (so rule 1, ≥5 years, marks long-stale auction candidates).
     const elapsed = (Date.parse(opts.snapshotDate) - Date.parse(pts)) / (365.25 * 86400 * 1000);
-    years = Math.round((5 + elapsed) * 100) / 100;
+    years = Math.round(elapsed * 100) / 100;
   }
   let ratio = parseNumber(get("owed_to_land_ratio"));
   if (ratio === null && redemption !== null && land_value) ratio = Math.round((redemption / land_value) * 10000) / 10000;
