@@ -35,7 +35,7 @@ export interface PropertyFilters {
 
 export const SORTABLE = [
   "apn", "situs_city", "acres", "distance_to_i10_mi", "land_value", "asking_price", "lead_status", "strategy",
-  "priority", "ev_score", "big_rig_access_score", "overall_score", "years_in_default", "owed_to_land_ratio",
+  "priority", "ev_score", "big_rig_access_score", "overall_score", "site_score", "years_in_default", "owed_to_land_ratio",
   "redemption_amount", "auction_date", "last_activity_at", "created_at", "updated_at",
 ] as const;
 export type SortKey = (typeof SORTABLE)[number];

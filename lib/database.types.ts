@@ -2963,6 +2963,7 @@ export type Database = {
           power_to_sell_date: string | null
           priority: number | null
           redemption_amount: number | null
+          site_score: number | null
           situs_address: string | null
           situs_city: string | null
           source_list: Database["public"]["Enums"]["source_list"] | null

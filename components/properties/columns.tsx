@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { fmtDate, fmtMoney, fmtNumber, daysSince } from "@/lib/utils";
 import { COUNTY_LABELS, LOCATION_METHOD_LABELS, ZONE_SHORT } from "@/lib/labels";
+import { scoreColor } from "@/lib/site";
 import type { SortKey } from "@/lib/filters";
 import type { Database } from "@/lib/database.types";
 import { AssigneeSelect, PrioritySelect, StatusSelect, StrategyBadge, TagEditor } from "./inline-edits";
@@ -70,6 +71,14 @@ export const COLUMNS: ColumnDef[] = [
   { id: "owner", label: "Owner(s)", cell: (r) => <span className="line-clamp-2 min-w-32 text-xs">{r.owner_names ?? "—"}</span> },
   { id: "contact", label: "Contact", cell: (r) => <span className="text-xs">{[r.has_phone && "Phone", r.has_email && "Email"].filter(Boolean).join(" · ") || "—"}</span> },
   { id: "flags", label: "Flags", cell: (r) => <span className="flex gap-1">{r.is_vacant && <Badge variant="secondary">Vacant</Badge>}{r.is_absentee && <Badge variant="secondary">Absentee</Badge>}{r.is_entity_owner && <Badge variant="secondary">Entity</Badge>}</span> },
+  {
+    id: "site", label: "Site", sort: "site_score", align: "right", defaultVisible: true,
+    cell: (r) => (r.site_score === null ? "—" : (
+      <span className="inline-flex items-center gap-1 tabular-nums" title="Development feasibility (0–10)">
+        <span className="size-2 rounded-full" style={{ background: scoreColor(r.site_score) }} />{num(r.site_score, 1)}
+      </span>
+    )),
+  },
   { id: "ev", label: "EV", sort: "ev_score", align: "right", cell: (r) => num(r.ev_score, 1) },
   { id: "bigrig", label: "Big-rig", sort: "big_rig_access_score", align: "right", cell: (r) => num(r.big_rig_access_score, 1) },
   { id: "zoning", label: "Zoning", cell: (r) => r.zoning ?? "—" },
