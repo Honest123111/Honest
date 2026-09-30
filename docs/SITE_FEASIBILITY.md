@@ -6,7 +6,7 @@
 
 | What | Source | How it gets in |
 |---|---|---|
-| Zoning, general plan, specific plan, fire hazard, fault zone, liquefaction, MSHCP criteria cell, airport influence, water district, farmland | County of Riverside GIS, `OpenData/General/MapServer` (identify at the parcel's interior point) | n8n **Site Feasibility Enrichment** (nightly, 1,000 parcels per run in batches of 15 — n8n stops a Code step after 60 s — refreshed every 90 days; parcels whose last fetch errored are retried after a day) |
+| Zoning, general plan, specific plan, fire hazard, fault zone, liquefaction, MSHCP criteria cell, airport influence, water district, farmland | County of Riverside GIS, `OpenData/General/MapServer` (identify at the parcel's interior point) | n8n **Site Feasibility Enrichment** (nightly, 1,000 parcels per run in batches of 5 with the four lookups run in parallel and a 45 s budget per batch — n8n stops a Code step after 60 s — refreshed every 90 days; parcels whose last fetch errored are retried after a day) |
 | Slope + elevation across the parcel | USGS 3DEP ImageServer (`computeStatisticsHistograms`, "Slope Degrees") | same |
 | Flood zone | FEMA NFHL (Esri's public copy, `USA_Flood_Hazard_Reduced_Set_gdb`) | same |
 | Planning / development cases within 3 mi, last 3 years | County PLUS cases (layer 280, `CASE_MODULE = 'PLAN'`) | same |
