@@ -10,6 +10,8 @@ import {
   type DevCase, type FeasibilityFactor, type NearbyAnchor, type ScoreComponents,
 } from "@/lib/site";
 import type { Comp, Property, Site } from "./types";
+import { formatApn } from "@/lib/apn";
+import { Google3DButton } from "@/components/map/google-3d";
 
 export function SiteTab({ property: p, site, comps }: { property: Property; site: Site | null; comps: Comp[] }) {
   const coords = (p as unknown as { centroid?: { coordinates?: [number, number] } }).centroid?.coordinates;
@@ -20,6 +22,10 @@ export function SiteTab({ property: p, site, comps }: { property: Property; site
       <Link href={`/map?property=${p.id}`} className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground"><MapPinned className="size-4" /> View on site map</Link>
       {lat !== null && lon !== null && (
         <>
+          <Google3DButton size="default" target={{
+            label: formatApn(p.county, p.apn), lat, lon,
+            geometry: (p as unknown as { geom?: unknown }).geom, color: scoreColor(site?.feasibility_score),
+          }} />
           <a href={googleEarthUrl(lat, lon)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm hover:bg-muted"><Earth className="size-4" /> Google Earth 3D</a>
           <a href={streetViewUrl(lat, lon)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm hover:bg-muted"><ExternalLink className="size-4" /> Street View</a>
         </>

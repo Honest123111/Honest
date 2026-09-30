@@ -21,5 +21,12 @@ env:
   - variable: NEXT_PUBLIC_SITE_URL
     value: https://ht-land--proptrack-cb719.us-central1.hosted.app
     availability: [BUILD, RUNTIME]
+  # Google Maps browser key for the in-app photorealistic 3D view. Kept in Secret
+  # Manager (not git): firebase apphosting:secrets:set GOOGLE_MAPS_API_KEY
+  # Restrict it in Google Cloud to this site's URL and to the Maps JavaScript +
+  # Map Tiles APIs. Uncomment once the secret exists (a missing secret fails the build).
+  # - variable: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  #   secret: GOOGLE_MAPS_API_KEY
+  #   availability: [BUILD, RUNTIME]
   # - variable: SUPABASE_SERVICE_ROLE_KEY
   #   secret: SUPABASE_SERVICE_ROLE_KEY

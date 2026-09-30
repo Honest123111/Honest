@@ -17,6 +17,7 @@ import {
   type BasemapKey, type Overlay,
 } from "./overlays";
 import type { Database } from "@/lib/database.types";
+import { Google3DButton } from "./google-3d";
 
 type Site = Database["public"]["Tables"]["site_feasibility"]["Row"];
 type Bbox = [number, number, number, number];
@@ -59,6 +60,8 @@ export function SiteMap({ focusId }: { focusId?: string }) {
   const [site, setSite] = useState<Site | null>(null);
   const [zoom, setZoom] = useState(9);
   const [counts, setCounts] = useState<{ total: number; scored: number } | null>(null);
+  // Full parcel geometry by id (features from map clicks are clipped to tiles).
+  const geomById = useRef<Map<string, GeoJSON.Geometry>>(new Map());
   const supabase = useMemo(() => createClient(), []);
 
   // --- map setup ---------------------------------------------------------------
@@ -169,6 +172,7 @@ export function SiteMap({ focusId }: { focusId?: string }) {
       const { data, error } = await supabase.rpc("map_properties");
       if (cancelled || error || !data) return;
       const fc = data as unknown as GeoJSON.FeatureCollection;
+      geomById.current = new Map(fc.features.map((f) => [String(f.properties?.id), f.geometry]));
       const map = mapRef.current!;
       (map.getSource("parcels") as GeoJSONSource).setData(fc);
       (map.getSource("parcel-points") as GeoJSONSource).setData({
@@ -357,7 +361,7 @@ export function SiteMap({ focusId }: { focusId?: string }) {
             </button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto p-3 text-sm">
-            {selected ? <SelectedPanel p={selected} site={site} /> : (
+            {selected ? <SelectedPanel p={selected} site={site} geometry={geomById.current.get(selected.id)} /> : (
               <LayerPanel active={active} toggle={toggle} zoom={zoom} minScore={minScore} setMinScore={setMinScore} counts={counts} />
             )}
           </div>
@@ -426,7 +430,7 @@ function OverlayToggle({ o, on, toggle, zoom }: { o: Overlay; on: boolean; toggl
   );
 }
 
-function SelectedPanel({ p, site }: { p: Selected; site: Site | null }) {
+function SelectedPanel({ p, site, geometry }: { p: Selected; site: Site | null; geometry?: GeoJSON.Geometry }) {
   const sc = (site?.score_components ?? {}) as ScoreComponents;
   const anchors = (site?.nearest_anchors ?? []) as unknown as NearbyAnchor[];
   const flags = site ? hazardFlags(site) : [];
@@ -488,6 +492,10 @@ function SelectedPanel({ p, site }: { p: Selected; site: Site | null }) {
       )}
       <div className="flex flex-wrap gap-1.5">
         <Link href={`/properties/${p.id}?tab=site`} className="inline-flex items-center gap-1 rounded-md bg-primary px-2.5 py-1.5 text-xs text-primary-foreground">Open property</Link>
+        <Google3DButton className="h-auto px-2.5 py-1.5" target={{
+          label: formatApn(p.county, p.apn), lat: p.lat, lon: p.lon, geometry,
+          color: scoreColor(site?.feasibility_score ?? p.score),
+        }} />
         <a href={googleEarthUrl(p.lat, p.lon)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs hover:bg-muted"><Earth className="size-3.5" /> Google Earth</a>
         <a href={streetViewUrl(p.lat, p.lon)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs hover:bg-muted"><ExternalLink className="size-3.5" /> Street View</a>
       </div>

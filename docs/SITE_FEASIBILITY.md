@@ -39,3 +39,18 @@ Map-only layers (live, not stored): USGS imagery/topo basemaps, AWS terrain tile
 
 - n8n (service role): `site_pending`, `site_apply`, `site_load_pois`, `site_load_storm_drains`, `site_recompute_batch`. Each call stays under PostgREST's 8 s limit.
 - App (members): `map_properties`, `map_pois`, `map_storm_drains`, `property_nearby_comps`.
+
+## Google photorealistic 3D (in-app)
+
+The **Google 3D** button (map parcel panel and the Site tab) opens Google's photorealistic 3D view with the parcel outlined on the terrain. It needs a Google Maps browser key.
+
+1. **Google Cloud Console → pick or create a project → Billing:** link a billing account. Google gives a free monthly allowance, then charges per map load.
+2. **APIs & Services → Library:** enable **Maps JavaScript API** and **Map Tiles API**.
+3. **APIs & Services → Credentials → Create credentials → API key**, then restrict it:
+   - Application restriction **Websites**: `https://ht-land--proptrack-cb719.us-central1.hosted.app/*` and `http://localhost:3000/*`.
+   - API restriction: only **Maps JavaScript API** and **Map Tiles API**.
+4. **Billing → Budgets & alerts:** set a monthly budget with alerts. Also consider a daily quota cap on both APIs (APIs & Services → Quotas).
+5. **Put the key in App Hosting:** run `firebase apphosting:secrets:set GOOGLE_MAPS_API_KEY`, paste the key, and grant the backend access when asked. Then uncomment the `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` entry in `apphosting.yaml` and redeploy.
+6. **Local dev:** put `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=…` in `.env.local`.
+
+The 3D library loads from the `beta` channel by default (`NEXT_PUBLIC_GOOGLE_MAPS_VERSION` overrides it).
