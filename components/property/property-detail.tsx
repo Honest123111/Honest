@@ -24,7 +24,8 @@ import { DocumentsTab, UploadDialog } from "./documents-tab";
 import { DealTab, OfferDialog } from "./deal-tab";
 import { TaxTab } from "./tax-tab";
 import { HistoryTab } from "./history-tab";
-import type { Activity, Audit, Doc, Note, Offer, OwnerLink, Property, Task, Tax } from "./types";
+import { SiteTab } from "./site-tab";
+import type { Activity, Audit, Comp, Doc, Note, Offer, OwnerLink, Property, Site, Task, Tax } from "./types";
 
 export function PropertyDetail(props: {
   property: Property;
@@ -36,6 +37,8 @@ export function PropertyDetail(props: {
   offers: Offer[];
   tax: Tax[];
   audit: Audit[];
+  site: Site | null;
+  comps: Comp[];
   initialTab: string;
   compose: boolean;
 }) {
@@ -86,6 +89,7 @@ export function PropertyDetail(props: {
             <ScoreChip label="EV" value={p.ev_score} />
             <ScoreChip label="Big-rig" value={p.big_rig_access_score} />
             <ScoreChip label="Overall" value={p.overall_score} />
+            <ScoreChip label="Site" value={props.site?.feasibility_score ?? null} />
           </div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm sm:flex sm:flex-wrap sm:items-center">
@@ -119,6 +123,7 @@ export function PropertyDetail(props: {
       <Tabs value={tab} onValueChange={changeTab} className="mt-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="site">Site</TabsTrigger>
           <TabsTrigger value="owners">Owner & Contacts</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
           <TabsTrigger value="tasks">Tasks{openCount ? ` (${openCount})` : ""}</TabsTrigger>
@@ -128,6 +133,7 @@ export function PropertyDetail(props: {
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
         <TabsContent value="overview"><OverviewTab property={p} notes={props.notes} tasks={props.tasks} tax={props.tax[0] ?? null} owners={props.owners} /></TabsContent>
+        <TabsContent value="site"><SiteTab property={p} site={props.site} comps={props.comps} /></TabsContent>
         <TabsContent value="owners"><OwnersTab property={p} owners={props.owners} /></TabsContent>
         <TabsContent value="activity">
           <ActivityTab property={p} notes={props.notes} activities={props.activities} composeOpen={composeOpen} setComposeOpen={setComposeOpen} />

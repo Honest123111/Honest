@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
-  Columns3, FileUp, Home, ListTodo, LogOut, Menu as MenuIcon, Moon, Settings, Sun, Table2,
+  Columns3, FileUp, Home, ListTodo, LogOut, Map as MapIcon, Menu as MenuIcon, Moon, Settings, Sun, Table2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { QuickAdd } from "./quick-add";
 const NAV = [
   { href: "/", label: "Home", icon: Home, exact: true },
   { href: "/properties", label: "Properties", icon: Table2 },
+  { href: "/map", label: "Map", icon: MapIcon },
   { href: "/pipeline", label: "Pipeline", icon: Columns3 },
   { href: "/tasks", label: "Tasks", icon: ListTodo },
   { href: "/imports", label: "Imports", icon: FileUp, needs: "write" as const },

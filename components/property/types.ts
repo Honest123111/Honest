@@ -12,3 +12,5 @@ export type Offer = T["offers"]["Row"];
 export type Tax = T["tax_status"]["Row"];
 export type Audit = T["audit_log"]["Row"];
 export type PropertyUpdate = T["properties"]["Update"];
+export type Site = T["site_feasibility"]["Row"];
+export type Comp = Database["public"]["Functions"]["property_nearby_comps"]["Returns"][number];

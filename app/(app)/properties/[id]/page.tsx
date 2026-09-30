@@ -19,7 +19,7 @@ export default async function PropertyPage({ params, searchParams }: {
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const { supabase } = await requireMember();
 
-  const [property, owners, notes, activities, tasks, documents, offers, tax, audit] = await Promise.all([
+  const [property, owners, notes, activities, tasks, documents, offers, tax, audit, site, comps] = await Promise.all([
     supabase.from("properties").select("*, site_metrics(*)").eq("id", id).maybeSingle(),
     supabase
       .from("property_owners")
@@ -33,6 +33,8 @@ export default async function PropertyPage({ params, searchParams }: {
     supabase.from("offers").select("*").eq("property_id", id).order("created_at", { ascending: false }),
     supabase.from("tax_status").select("*").eq("property_id", id).order("snapshot_date", { ascending: false }),
     supabase.from("audit_log").select("*").eq("property_id", id).order("at", { ascending: false }).limit(300),
+    supabase.from("site_feasibility").select("*").eq("property_id", id).maybeSingle(),
+    supabase.rpc("property_nearby_comps", { p_property_id: id, p_radius_mi: 10 }),
   ]);
   if (!property.data) notFound();
 
@@ -47,6 +49,8 @@ export default async function PropertyPage({ params, searchParams }: {
       offers={offers.data ?? []}
       tax={tax.data ?? []}
       audit={audit.data ?? []}
+      site={site.data ?? null}
+      comps={comps.data ?? []}
       initialTab={tab ?? "overview"}
       compose={compose === "1"}
     />

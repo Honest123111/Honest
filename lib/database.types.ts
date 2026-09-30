@@ -2295,6 +2295,144 @@ export type Database = {
           },
         ]
       }
+      site_feasibility: {
+        Row: {
+          airport_influence: string | null
+          anchors_5mi: number | null
+          comps_n: number | null
+          comps_radius_mi: number | null
+          computed_at: string | null
+          created_at: string
+          dev_cases: Json
+          dev_cases_3mi: number | null
+          elev_max_ft: number | null
+          elev_min_ft: number | null
+          est_price_per_acre: number | null
+          est_value: number | null
+          farmland: string | null
+          fault_zone: boolean | null
+          feasibility_score: number | null
+          fetch_errors: Json
+          fetched_at: string | null
+          fire_hazard: string | null
+          fire_sra: string | null
+          flood_sfha: boolean | null
+          flood_zone: string | null
+          fuel_3mi: number | null
+          gp_foundation: string | null
+          gp_land_use: string | null
+          grocery_3mi: number | null
+          liquefaction: string | null
+          mshcp_criteria_cell: string | null
+          nearest_anchors: Json
+          property_id: string
+          restaurants_3mi: number | null
+          score_components: Json
+          slope_max_deg: number | null
+          slope_mean_deg: number | null
+          specific_plan: string | null
+          storm_drain_mi: number | null
+          updated_at: string
+          water_district: string | null
+          zoning_county: string | null
+        }
+        Insert: {
+          airport_influence?: string | null
+          anchors_5mi?: number | null
+          comps_n?: number | null
+          comps_radius_mi?: number | null
+          computed_at?: string | null
+          created_at?: string
+          dev_cases?: Json
+          dev_cases_3mi?: number | null
+          elev_max_ft?: number | null
+          elev_min_ft?: number | null
+          est_price_per_acre?: number | null
+          est_value?: number | null
+          farmland?: string | null
+          fault_zone?: boolean | null
+          feasibility_score?: number | null
+          fetch_errors?: Json
+          fetched_at?: string | null
+          fire_hazard?: string | null
+          fire_sra?: string | null
+          flood_sfha?: boolean | null
+          flood_zone?: string | null
+          fuel_3mi?: number | null
+          gp_foundation?: string | null
+          gp_land_use?: string | null
+          grocery_3mi?: number | null
+          liquefaction?: string | null
+          mshcp_criteria_cell?: string | null
+          nearest_anchors?: Json
+          property_id: string
+          restaurants_3mi?: number | null
+          score_components?: Json
+          slope_max_deg?: number | null
+          slope_mean_deg?: number | null
+          specific_plan?: string | null
+          storm_drain_mi?: number | null
+          updated_at?: string
+          water_district?: string | null
+          zoning_county?: string | null
+        }
+        Update: {
+          airport_influence?: string | null
+          anchors_5mi?: number | null
+          comps_n?: number | null
+          comps_radius_mi?: number | null
+          computed_at?: string | null
+          created_at?: string
+          dev_cases?: Json
+          dev_cases_3mi?: number | null
+          elev_max_ft?: number | null
+          elev_min_ft?: number | null
+          est_price_per_acre?: number | null
+          est_value?: number | null
+          farmland?: string | null
+          fault_zone?: boolean | null
+          feasibility_score?: number | null
+          fetch_errors?: Json
+          fetched_at?: string | null
+          fire_hazard?: string | null
+          fire_sra?: string | null
+          flood_sfha?: boolean | null
+          flood_zone?: string | null
+          fuel_3mi?: number | null
+          gp_foundation?: string | null
+          gp_land_use?: string | null
+          grocery_3mi?: number | null
+          liquefaction?: string | null
+          mshcp_criteria_cell?: string | null
+          nearest_anchors?: Json
+          property_id?: string
+          restaurants_3mi?: number | null
+          score_components?: Json
+          slope_max_deg?: number | null
+          slope_mean_deg?: number | null
+          specific_plan?: string | null
+          storm_drain_mi?: number | null
+          updated_at?: string
+          water_district?: string | null
+          zoning_county?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_feasibility_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: true
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_feasibility_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: true
+            referencedRelation: "property_grid"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_metrics: {
         Row: {
           aadt_point_id: string | null
@@ -2944,7 +3082,31 @@ export type Database = {
         }
         Returns: number
       }
+      map_pois: {
+        Args: { p_east: number; p_north: number; p_south: number; p_west: number }
+        Returns: Json
+      }
+      map_properties: { Args: never; Returns: Json }
+      map_storm_drains: {
+        Args: { p_east: number; p_north: number; p_south: number; p_west: number }
+        Returns: Json
+      }
       normalize_apn: { Args: { p_apn: string }; Returns: string }
+      property_nearby_comps: {
+        Args: { p_property_id: string; p_radius_mi?: number }
+        Returns: {
+          acres: number
+          apn: string
+          distance_mi: number
+          id: string
+          price_per_acre: number
+          sale_date: string
+          sale_price: number
+          situs_city: string
+          source: string
+          zoning: string
+        }[]
+      }
       recompute_property_geo: { Args: never; Returns: number }
       request_enrichment: {
         Args: {
