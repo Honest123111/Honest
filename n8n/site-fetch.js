@@ -1,4 +1,4 @@
-// Runs once per batch item: { props: [{ property_id, apn, lon, lat, polygon }] } (≤ 40).
+// Runs once per batch item: { props: [{ property_id, apn, lon, lat, polygon }] } (≤ 15).
 // For each parcel, pulls the free public facts behind the feasibility score and
 // returns one item { rows } for public.site_apply. A lookup that fails is left
 // out of the row (the database keeps the previous value) and noted in `errors`.
@@ -11,15 +11,16 @@ const DEM = 'https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevatio
 const FLOOD = 'https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/USA_Flood_Hazard_Reduced_Set_gdb/FeatureServer/0';
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
+// n8n stops a Code step after 60 s, so keep requests short: 12 s × 2 tries.
 async function get(url) {
   let lastErr;
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const res = await helpers.httpRequest({ url, method: 'GET', json: true, timeout: 60000 });
+      const res = await helpers.httpRequest({ url, method: 'GET', json: true, timeout: 12000 });
       const body = typeof res === 'string' ? JSON.parse(res) : res;
       if (body && body.error) throw new Error(JSON.stringify(body.error).slice(0, 200));
       return body;
-    } catch (e) { lastErr = e; await sleep(1500 * attempt); }
+    } catch (e) { lastErr = e; await sleep(1000); }
   }
   throw lastErr;
 }
