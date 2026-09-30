@@ -26,8 +26,9 @@ async function get(url) {
 
 // Identify returns display aliases ("FARMLAND DESCRIPTION"), queries return field names.
 const attr = (a, name) => {
-  const v = a[name] !== undefined ? a[name] : a[name.replace(/_/g, ' ')];
-  return v === undefined || v === null || v === '' || v === 'Null' ? null : String(v).trim();
+  const raw = a[name] !== undefined ? a[name] : a[name.replace(/_/g, ' ')];
+  const v = raw === undefined || raw === null ? '' : String(raw).trim();
+  return v === '' || v === 'Null' ? null : v;
 };
 const DEV_TYPES = /SPECIFIC PLAN|GENERAL PLAN AMENDMENT|CHANGE OF ZONE|TENTATIVE (TRACT|PARCEL)|TRACT MAP|CONDITIONAL USE|PLOT PLAN|DEVELOPMENT AGREEMENT|ENVIRONMENTAL IMPACT|PRE-APPLICATION|COMMERCIAL|INDUSTRIAL/;
 const miBetween = (lon1, lat1, lon2, lat2) => {
